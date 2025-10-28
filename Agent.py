@@ -26,6 +26,6 @@ class Agent:
         formatted = "\n".join(
             [f"{m['sender']}: {m['content']}" for m in self.bus.history[-6:]]
         )
-        reply = prompt_gemini(formatted + f"\n{self.name}:")
+        reply = prompt_gemini(self.model, formatted + f"\n{self.name}:")
         print(f"{self.name} -> {message['receiver']}: {reply}")
         self.send(message["sender"], reply)
