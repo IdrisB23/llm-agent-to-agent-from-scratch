@@ -1,20 +1,9 @@
-from google import genai
-from dotenv import load_dotenv
-from os.path import join, dirname
-import os
 import queue
 import threading
 import time
+from utils import prompt_gemini
 
 
-dotenv_path = join(dirname(__file__), ".env")
-load_dotenv(dotenv_path)
-
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-
-
-# The client gets the API key from the environment variable `GEMINI_API_KEY`.
-client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def format_message(history: list[str]) -> str:
@@ -33,11 +22,6 @@ def format_message(history: list[str]) -> str:
         for m in non_sys_messages
     ])
     return formatted_history
-
-
-def prompt_gemini(msg: str) -> str:
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=msg)
-    return response.text
 
 
 # Use the robust two-queue setup
@@ -80,7 +64,18 @@ def agent_a(req_q, res_q):
         # 4. Decide whether to continue or stop
         if conversation_round >= max_rounds:
             print("Agent A is ending the conversation.")
-            req_q.put("STOP")  # Send the stop signal
+            message = {
+                "sender": "Agent A",
+                "receiver": "Agent B",
+                "timestamp": time.time(),
+                "type": "message.stop",
+                "content": "STOP",
+                "metadata": {
+                    "intent": "end_conversation",
+                    "conversation_id": "conv_12345",
+                },
+            }
+            req_q.put(message)  # Send the stop signal
             break
 
         # 5. Formulate the next question
