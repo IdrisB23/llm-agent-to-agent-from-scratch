@@ -64,7 +64,18 @@ def agent_a(req_q, res_q):
         # 4. Decide whether to continue or stop
         if conversation_round >= max_rounds:
             print("Agent A is ending the conversation.")
-            req_q.put("STOP")  # Send the stop signal
+            message = {
+                "sender": "Agent A",
+                "receiver": "Agent B",
+                "timestamp": time.time(),
+                "type": "message.stop",
+                "content": "STOP",
+                "metadata": {
+                    "intent": "end_conversation",
+                    "conversation_id": "conv_12345",
+                },
+            }
+            req_q.put(message)  # Send the stop signal
             break
 
         # 5. Formulate the next question
