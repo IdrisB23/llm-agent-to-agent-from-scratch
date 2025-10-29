@@ -2,7 +2,8 @@
 
 import threading
 import queue
-import time
+import datetime
+from models.Message import Message
 
 
 class AgentThread(threading.Thread):
@@ -22,21 +23,21 @@ class AgentThread(threading.Thread):
             except queue.Empty:
                 continue
             # control messages
-            if msg.get("type") == "control" and msg.get("content") == "SHUTDOWN":
+            if msg.type == "control" and msg.content == "SHUTDOWN":
                 break
             # process message
             try:
                 # handler uses bus.history if needed; history is protected by bus
                 reply = self.handler(msg, self.bus.history)
                 if reply is not None:
-                    out_msg = {
-                        "type": "message.create",
-                        "sender": self.name,
-                        "receiver": msg["sender"],
-                        "timestamp": time.time(),
-                        "content": reply,
-                        "metadata": {},
-                    }
+                    out_msg = Message(
+                        type="message.create",
+                        sender=self.name,
+                        recipient=msg.sender,
+                        timestamp=datetime.datetime.now(),
+                        content=reply,
+                        metadata={},
+                    )
                     self.bus.send(out_msg)
             except Exception as e:
                 print(f"[ERROR] agent {self.name}: {e}")
@@ -51,7 +52,7 @@ class AgentThread(threading.Thread):
                     "type": "control",
                     "sender": "system",
                     "receiver": self.name,
-                    "timestamp": time.time(),
+                    "timestamp": datetime.datetime.now(),
                     "content": "SHUTDOWN",
                 }
             )
