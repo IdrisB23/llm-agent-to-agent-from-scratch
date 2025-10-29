@@ -1,6 +1,6 @@
 import datetime
-from threads.ThreadAgent import AgentThread
-from threads.ThreadBus import ThreadBus
+from agent.ThreadAgent import AgentThread
+from bus.ThreadBus import ThreadBus
 import time
 
 from models.Message import Message
