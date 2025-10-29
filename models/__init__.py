@@ -1,0 +1,1 @@
+"""A module for pydantic models definitions"""
