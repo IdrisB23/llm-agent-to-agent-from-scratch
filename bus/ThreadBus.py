@@ -1,9 +1,10 @@
 """A simple message bus for inter-thread communication between agents."""
 
+import datetime
 import threading
 import queue
-import time
 
+from models.Message import Message
 
 class ThreadBus:
     def __init__(self):
@@ -21,13 +22,13 @@ class ThreadBus:
         with self.history_lock:
             self.history.append(msg)
 
-    def send(self, msg, timeout=1.0):
-        print(f"[BUS] {msg['sender']} -> {msg['receiver']}: {msg['content']}")
-        receiver = msg["receiver"]
+    def send(self, msg: Message, timeout=1.0):
+        print(f"[BUS] {msg.sender} -> {msg.recipient}: {msg.content}")
+        receiver = msg.recipient
         self.append_history(msg)
         if receiver == "broadcast":
             for name, q in self.queues.items():
-                if name != msg["sender"]:
+                if name != msg.sender:
                     try:
                         q.put(msg, timeout=timeout)
                     except queue.Full:
@@ -45,11 +46,11 @@ class ThreadBus:
     def shutdown(self):
         self.running = False
         # send shutdown control to every agent (broadcast)
-        shutdown_msg = {
-            "type": "control",
-            "sender": "system",
-            "receiver": "broadcast",
-            "timestamp": time.time(),
-            "content": "SHUTDOWN",
-        }
+        shutdown_msg = Message(
+            type="control",
+            sender="system",
+            recipient="broadcast",
+            timestamp=datetime.datetime.now(),
+            content="SHUTDOWN",
+        )
         self.send(shutdown_msg, timeout=0.1)
