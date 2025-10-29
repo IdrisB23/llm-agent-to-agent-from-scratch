@@ -4,7 +4,7 @@ import datetime
 import threading
 import queue
 
-from bus import BaseBus
+from bus.BaseBus import BaseBus
 from models.Message import Message
 
 class ThreadBus(BaseBus):
